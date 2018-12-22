@@ -8,6 +8,7 @@ public class EightcEvent {
 	long startDate;
 	long endDate;
 	int valence;
+	String happening;
 	
 	public String getEightc() {
 		return eightc;
@@ -33,12 +34,19 @@ public class EightcEvent {
 	public void setValence(int valence) {
 		this.valence = valence;
 	}
+	public String getHappening() {
+		return happening;
+	}
+	public void setHappening(String happening) {
+		this.happening = happening;
+	}
 	
-	public EightcEvent(String eightc, long startDate, long endDate, int valence) {
+	public EightcEvent(String eightc, long startDate, long endDate, int valence, String happening) {
 		this.eightc = eightc;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.valence = valence;
+		this.happening = happening;
 	}
 	
 	public String
@@ -49,7 +57,9 @@ public class EightcEvent {
 		result.addProperty("startDate", startDate);
 		result.addProperty("endDate", endDate);
 		result.addProperty("value", valence);
+		result.addProperty("happening", getHappening());
 		
 		return result.toString();
 	}
+
 }

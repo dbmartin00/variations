@@ -2,18 +2,28 @@ package com.dbm.variations;
 
 public class Query {
 
-	private String name;
+	String token;
+	private String id;
 
-	public String getName() {
-		return name;
+	public String getToken() {
+		return token;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setToken(String token) {
+		this.token = token;
+	}
+	
+	public Query(String token) {
+		this.token = token;
 	}
 
-	public Query(String name) {
-		this.name = name;
+	public String getId() {
+		return id;
 	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+	
 }
 
