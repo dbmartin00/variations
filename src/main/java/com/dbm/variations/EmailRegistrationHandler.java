@@ -148,10 +148,10 @@ RequestHandler<EmailRegistration, Object> {
 	static final String TO = "recipient@example.com";
 
 	// Replace smtp_username with your Amazon SES SMTP user name.
-	static final String SMTP_USERNAME = "AKIAJ54LMZ7XJWQWCV3Q";
+	static final String SMTP_USERNAME = "FOO";
 
 	// Replace smtp_password with your Amazon SES SMTP password.
-	static final String SMTP_PASSWORD = "AiSW/b029W7xBILRyB0ekxbvMIrKQD19XqTL6Tt8WZL3";
+	static final String SMTP_PASSWORD = "BAR";
 
 	// Amazon SES SMTP host name. This example uses the US West (Oregon) region.
 	// See http://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html#region-endpoints
