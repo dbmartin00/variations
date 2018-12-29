@@ -33,10 +33,9 @@ public class Authenticate implements RequestStreamHandler, RequestHandler<Object
 	public void handleRequest(InputStream input, OutputStream output,
 			Context context) throws IOException {
 		LambdaLogger logger = context.getLogger();
-		logger.log("Input: " + input);
-		
 		Credential credential = new Gson().fromJson(IOUtils.toString(input, "UTF-8"), Credential.class);
-
+		logger.log("credential: " + credential);
+		
 		if (ddb == null) {
 			ddb = AmazonDynamoDBClientBuilder.standard()
 					.withRegion(Regions.US_WEST_2).build();
@@ -54,7 +53,7 @@ public class Authenticate implements RequestStreamHandler, RequestHandler<Object
 		Map<String,AttributeValue> itemResult = ddb.getItem(request).getItem();
 		if(itemResult != null) {
 			String password = itemResult.get("password").getS();
-			String id = itemResult.get("id").getN();
+			String id = itemResult.get("id").getS();
 			if(password.equals(credential.getPassword())) {
 				Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
 				AttributeValue tokenValue = new AttributeValue(UUID.randomUUID().toString());

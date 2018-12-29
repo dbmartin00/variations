@@ -24,13 +24,14 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 
 public class EmailRegistrationHandler implements
-RequestHandler<EmailRegistration, Object> {
+RequestHandler<UsernameId, Object> {
 
 	AmazonDynamoDB ddb;
+	LambdaLogger logger;
 
 	@Override
-	public Object handleRequest(EmailRegistration input, Context context) {
-		LambdaLogger logger = context.getLogger();
+	public Object handleRequest(UsernameId input, Context context) {
+		logger = context.getLogger();
 		logger.log("Input: " + input);
 		if (ddb == null) {
 			ddb = initDynamoDbClient();
@@ -45,14 +46,18 @@ RequestHandler<EmailRegistration, Object> {
 		.withTableName("variations_credentials");
 
 		Map<String,AttributeValue> itemResult = ddb.getItem(request).getItem();
+		// username found
 		if(itemResult != null) {
 			logger.log("dynamo returned: " + itemResult);
 			String id = itemResult.get("id").getS();
 			logger.log("id : '" + id + "' input.getId(): '" + input.getId() + "'");
+			// id associated with username matches input id
 			if(!input.getId().equals(id)) {
 				// not a valid id; send a new one
 				response.put("message", "not a valid id, '" + input.getId() + "'; check your mail for a valid registration link: " + input.getUsername());
+				sendAnEmailWithNewId(input, response);
 			} else {
+				// everything checks out.  mark account valid
 				Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
 				item.put("id", new AttributeValue(id));
 				item.put("username", new AttributeValue(input.getUsername()));
@@ -65,31 +70,35 @@ RequestHandler<EmailRegistration, Object> {
 				response.put("message", "address validated");
 			}
 		} else {
-			String uuid = UUID.randomUUID().toString();
-			Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
-			item.put("id", new AttributeValue(uuid));
-			item.put("username", new AttributeValue(input.getUsername()));
-			AttributeValue trueValue = new AttributeValue();
-			trueValue.setBOOL(Boolean.FALSE);
-			item.put("valid", trueValue);
-
-			ddb.putItem("variations_credentials", item);
-
-			String result = "";
-			try {
-				result = sendRegistrationEmail(uuid, input.getUsername());
-				response.put("message", result);
-			} catch (Exception e) {
-				response.put("error", "problem sending initial registration email: " + e.getMessage());			
-			}
+			sendAnEmailWithNewId(input, response);
 		}
 
 		return response.toString();
 	}
 
-	private String sendRegistrationEmail(String id, String address) throws Exception {
-		String result = "error during registration email send to address (" + address + ")";
+	private void sendAnEmailWithNewId(UsernameId input, JSONObject response) {
+		// username not found, so creating a new record for input username
+		// send an email to the input username with registration link
+		String uuid = UUID.randomUUID().toString();
+		Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
+		item.put("id", new AttributeValue(uuid));
+		item.put("username", new AttributeValue(input.getUsername()));
+		AttributeValue falseValue = new AttributeValue();
+		falseValue.setBOOL(Boolean.FALSE);
+		item.put("valid", falseValue);
 
+		ddb.putItem("variations_credentials", item);
+
+		String result = "";
+		try {
+			sendRegistrationEmail(uuid, input.getUsername());
+			response.put("message", result);
+		} catch (Exception e) {
+			response.put("error", "problem sending initial registration email: " + e.getMessage());			
+		}
+	}
+
+	private void sendRegistrationEmail(String id, String address) throws Exception {
 		// Create a Properties object to contain connection configuration information.
 		Properties props = System.getProperties();
 		props.put("mail.transport.protocol", "smtp");
@@ -108,11 +117,11 @@ RequestHandler<EmailRegistration, Object> {
 
 		String BODY = String.join(
 				System.getProperty("line.separator"),
-				"<h1><a href=\"@@URL@@?id=@@ID@@&address=@@ADDRESS@@\">Click on this link to complete your registration.</a></h1>");
+				"<h1><a href=\"@@URL@@?id=@@ID@@&username=@@ADDRESS@@\">Click on this link to complete your registration.</a></h1>");
 
 		BODY = BODY.replaceAll("@@ID@@", id);
 		BODY = BODY.replaceAll("@@ADDRESS@@", address);
-		BODY = BODY.replaceAll("@@URL@@", "https://1oaodu1n44.execute-api.us-west-2.amazonaws.com/prod");
+		BODY = BODY.replaceAll("@@URL@@", "https://bszcesij9l.execute-api.us-west-2.amazonaws.com/prod");
 		msg.setContent(BODY, "text/html");
 
 		// Create a transport.
@@ -123,13 +132,10 @@ RequestHandler<EmailRegistration, Object> {
 
 			transport.connect(HOST, SMTP_USERNAME, SMTP_PASSWORD);
 			transport.sendMessage(msg, msg.getAllRecipients());
-			result = "registration email sent";
-
+			logger.log("registration email sent to: " + address);
 		} finally {
 			transport.close();
 		}
-
-		return result;
 	}
 
 	private AmazonDynamoDB initDynamoDbClient() {
@@ -148,10 +154,10 @@ RequestHandler<EmailRegistration, Object> {
 	static final String TO = "recipient@example.com";
 
 	// Replace smtp_username with your Amazon SES SMTP user name.
-	static final String SMTP_USERNAME = "AKIAJ54LMZ7XJWQWCV3Q";
+	static final String SMTP_USERNAME = "FAKE";
 
 	// Replace smtp_password with your Amazon SES SMTP password.
-	static final String SMTP_PASSWORD = "AiSW/b029W7xBILRyB0ekxbvMIrKQD19XqTL6Tt8WZL3";
+	static final String SMTP_PASSWORD = "FAKE";
 
 	// Amazon SES SMTP host name. This example uses the US West (Oregon) region.
 	// See http://docs.aws.amazon.com/ses/latest/DeveloperGuide/regions.html#region-endpoints
@@ -161,6 +167,6 @@ RequestHandler<EmailRegistration, Object> {
 	// The port you will connect to on the Amazon SES SMTP endpoint. 
 	static final int PORT = 587;
 
-	static final String SUBJECT = "Validate your email for Cortazar";
+	static final String SUBJECT = "Validate your email for Eight Cs";
 
 }

@@ -35,4 +35,10 @@ public class Credential {
 		return result.toString();
 	}
 	
+	@Override
+	public String toString() {
+		return "Credential [username=" + username + ", password=" + password
+				+ "]";
+	}
+	
 }

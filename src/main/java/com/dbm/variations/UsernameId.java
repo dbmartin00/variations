@@ -1,13 +1,11 @@
 package com.dbm.variations;
 
-public class EmailRegistration {
+public class UsernameId {
 
 	private String username;
 	private String id;
 	
-	public EmailRegistration() {
-		
-	}
+	public UsernameId() { }
 	
 	public String getId() {
 		return id;
@@ -21,6 +19,10 @@ public class EmailRegistration {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "UsernameId [username=" + username + ", id=" + id + "]";
+	}
 	
 }
