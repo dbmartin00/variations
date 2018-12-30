@@ -75,10 +75,10 @@ public class QueryHandler implements RequestStreamHandler, RequestHandler<Object
 					Map<String, AttributeValue> eventResult = ddb.getItem(eventRequest).getItem();
 					if(eventResult != null) {
 						String eightc = eventResult.get("eightc").getS();
-						String endDate = eventResult.get("endDate").getN();
+						String endDate = eventResult.get("endDate").getS();
 						String happening = eventResult.get("happening").getS();
-						String startDate = eventResult.get("startDate").getN();
-						String valence = eventResult.get("valence").getN();
+						String startDate = eventResult.get("startDate").getS();
+						String valence = eventResult.get("valence").getS();
 						logger.log("" + eightc + ", " + endDate + ", " + happening + ", "
 							+ startDate + ", " + valence);
 						EightcEvent e = new EightcEvent(query.getId(), eightc, Long.parseLong(startDate), Long.parseLong(endDate), Integer.parseInt(valence), happening, "");
