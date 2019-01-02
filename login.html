@@ -1,0 +1,234 @@
+<html>
+    <head>
+        <style>
+            form {
+                font-family: verdana;
+                text-align: left;
+                font-size: 15px;
+                border: 1px solid black;
+                padding : 10px;
+                margin: 50px;
+            }
+            h1 {
+                float: left;
+            }
+            table, th, td {
+                border: 1px solid black;
+                text-align: center;
+                vertical-align: middle;
+            }
+            table {
+                border-collapse: collapse;
+                width: 50%;
+            }
+            th, td {
+                padding: 15px;
+            }
+            tr:nth-child(even) {background-color: #f2f2f2;}
+        </style>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+        <script src="http://malsup.github.com/jquery.form.js"></script> 
+
+        <script>
+            $(document).ready(function() { 
+                $('#loginForm')
+                    .ajaxForm({
+                    dataType : 'json',
+                    success : function (response) {
+                        document.getElementById('read_id').value = response.uid;
+                        document.getElementById('read_token').value = response.token;
+                        document.getElementById('create_id').value = response.uid;
+                        document.getElementById('create_token').value = response.token;
+                        setCookie('eightCuid', response.uid, 7);
+                        setCookie('eightCtoken', response.token, 7);
+                        console.log('login!');
+                    }
+                })
+                ;
+            });
+
+            $(document).ready(function() { 
+                var now = (new Date).getTime();
+                $('#createForm')
+                    .ajaxForm({
+                    dataType : 'json',
+                    success : function (response) {
+                        console.log('created!');
+                        $.ajax({
+                            url: 'https://8q7bp114we.execute-api.us-west-2.amazonaws.com/prod/query',
+                            type: 'POST',
+                            success: function (data) {
+                                drawEventsTable(data);
+                            },
+                            data: { uid: getCookie('eightCuid'), token: getCookie('eightCtoken') }
+                        });
+                    },
+                    data : $('createForm').serialize() + '&startDate=' + now + '&endTime=' + now
+                })
+            });
+
+
+            $(document).ready(function() { 
+                $('#readForm')
+                    .ajaxForm({
+                    dataType : 'json',
+                    success : function (response) {
+                        drawEventsTable(response);
+                        console.log('read!');
+                    }
+                })
+            });
+
+            function drawEventsTable(response) {
+                var tbl = document.getElementById('event_table');
+                $("#event_table tr").remove(); 
+                for(i in response) {
+                    //console.log(JSON.stringify(response[i]));
+                    var tr = document.createElement('tr');
+                    var td1 = document.createElement('td');
+                    var td2 = document.createElement('td');
+                    var td3 = document.createElement('td');
+                    var td4 = document.createElement('td');
+                    var td5 = document.createElement('td');
+                    var td6 = document.createElement('td');
+                    td1.appendChild(document.createTextNode(response[i].eightc));
+                    td2.appendChild(document.createTextNode(response[i].startDate));
+                    td3.appendChild(document.createTextNode(response[i].endDate));
+                    td4.appendChild(document.createTextNode(response[i].value));
+                    td5.appendChild(document.createTextNode(response[i].happening));
+
+                    var uid = response[i].uid;
+                    var eventId = response[i].eventId;
+                    //                            console.log('uid: ' + uid);
+                    //                            console.log('eventId: ' + eventId);
+
+                    var f = document.createElement("form");
+                    f.setAttribute('id', 'deleteForm' + i);
+                    f.setAttribute('method',"post");
+                    f.setAttribute('action',"https://woshq2x9j3.execute-api.us-west-2.amazonaws.com/prod");
+
+                    var i = document.createElement("input"); //input element, text
+                    i.setAttribute('type',"hidden");
+                    i.setAttribute('name',"uid");
+                    i.setAttribute('value', uid);
+
+                    var i2 = document.createElement("input"); //input element, text
+                    i2.setAttribute('type',"hidden");
+                    i2.setAttribute('name',"token");
+                    i2.setAttribute('value', getCookie('eightCtoken'));
+
+                    var i3 = document.createElement("input"); //input element, text
+                    i3.setAttribute('type',"hidden");
+                    i3.setAttribute('name',"eventId");
+                    i3.setAttribute('value', eventId);
+
+                    var s = document.createElement("input"); //input element, Submit button
+                    s.setAttribute('type',"submit");
+                    s.setAttribute('value',"delete");
+
+                    f.appendChild(i);
+                    f.appendChild(i2);
+                    f.appendChild(i3);
+                    f.appendChild(s);
+                    td6.appendChild(f);
+
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+                    tr.appendChild(td3);
+                    tr.appendChild(td4);
+                    tr.appendChild(td5);
+                    tr.appendChild(td6);
+                    tbl.appendChild(tr);
+                }
+                for(i in response) {
+                    $('#deleteForm' + i)
+                        .ajaxForm({
+                        dataType : 'json',
+                        success : function (response) {                                    
+                            console.log('deleted!');
+                            $.ajax({
+                                url: 'https://8q7bp114we.execute-api.us-west-2.amazonaws.com/prod/query',
+                                type: 'POST',
+                                success: function (data) {
+                                    drawEventsTable(data);
+                                },
+                                data: { uid: getCookie('eightCuid'), token: getCookie('eightCtoken') }
+                            });
+                        }
+                    })
+                }
+            }
+
+            $(document).ready(function() { 
+                document.getElementById('create_startDate').value = (new Date).getTime();
+                document.getElementById('create_endDate').value = (new Date).getTime();
+                document.getElementById('create_id').value = getCookie('eightCuid');
+                document.getElementById('create_token').value = getCookie('eightCtoken');
+            });
+
+            function setCookie(name,value,days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days*24*60*60*1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "")  + expires + "; path=/";
+            }
+            function getCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0;i < ca.length;i++) {
+                    var c = ca[i];
+                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                }
+                return null;
+            }
+            function eraseCookie(name) {   
+                document.cookie = name+'=; Max-Age=-99999999;';  
+            }
+        </script>
+    </head>
+    <h1>Login
+        <form id="loginForm" action="https://7lj86bqic1.execute-api.us-west-2.amazonaws.com/prod/login" method="POST">
+            username:&nbsp;<input id="username" type="text" name="username" value="david.martin@gmail.com">
+            password:&nbsp;<input id="password" type="text" name="password" value="Test12345$"/>
+            <input type="submit" value="login"/>
+        </form>
+    </h1>
+
+    <h1 style="float: left;">Read
+        <form id="readForm" action="https://8q7bp114we.execute-api.us-west-2.amazonaws.com/prod/query" method="POST">
+            id:&nbsp;<input id="read_id" type="text" name="uid" value="">
+            token:&nbsp;<input id="read_token" type="text" name="token" value=""/>
+            <input type="submit" value="read"/>
+        </form>
+        <table id="event_table">
+            <th>Eight C</th><th>startDate</th><th>endDate</th><th>valence</th><th>happening</th><th>delete</th>
+        </table>
+    </h1>
+
+    <h1 style="float: left;">Create
+        <form id="createForm" action="https://ycgno0hcla.execute-api.us-west-2.amazonaws.com/prod" method="POST">
+            <input id="create_id" type="hidden" name="uid" value="">
+            <input id="create_token" type="hidden" name="token" value="">
+            eightc:&nbsp;<input id="eightc" type="text" name="eightc" value="curiosity">
+            valence:&nbsp;<input id="valence" type="text" name="valence" value="3"/>
+            happening:&nbsp;<input id="happening" type="text" name="happening" value="foofoo"/>
+            <input id="create_startDate" type="hidden" name="startDate" value=""/>
+            <input id="create_endDate" type="hidden" name="endDate" value=""/>
+            <input id="create_submit" type="submit" value="create"/>
+        </form>
+    </h1>
+
+    <h1>Register & Validate by Email
+        <form action="https://bszcesij9l.execute-api.us-west-2.amazonaws.com/prod" method="POST">
+            username:&nbsp;<input type="text" name="username" value="david.martin@gmail.com">
+            id:&nbsp;<input type="text" name="uid" value="5050"/>
+            <input type="submit" value="POST"/>
+        </form>
+    </h1>
+    <a href="https://bszcesij9l.execute-api.us-west-2.amazonaws.com/prod?username=david.martin%40gmail.com&id=5050">register</a>
+
+</html>

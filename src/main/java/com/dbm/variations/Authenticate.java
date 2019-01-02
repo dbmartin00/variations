@@ -53,20 +53,20 @@ public class Authenticate implements RequestStreamHandler, RequestHandler<Object
 		Map<String,AttributeValue> itemResult = ddb.getItem(request).getItem();
 		if(itemResult != null) {
 			String password = itemResult.get("password").getS();
-			String id = itemResult.get("id").getS();
+			String uid = itemResult.get("uid").getS();
 			if(password.equals(credential.getPassword())) {
 				Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
 				AttributeValue tokenValue = new AttributeValue(UUID.randomUUID().toString());
 				item.put("token", tokenValue);
 				item.put("timestamp", new AttributeValue("" + System.currentTimeMillis()));
-				AttributeValue idValue = new AttributeValue(id);
-				item.put("id", idValue);
+				AttributeValue idValue = new AttributeValue(uid);
+				item.put("uid", idValue);
 
 				ddb.putItem("variations_tokens", item);
 				response.addProperty("error", "");	
 				response.addProperty("message", "authentication successful");
 				response.addProperty("token", tokenValue.getS());
-				response.addProperty("id", idValue.getS());				
+				response.addProperty("uid", idValue.getS());				
 			} else {
 				response.addProperty("error", "password doesn't match");				
 			}

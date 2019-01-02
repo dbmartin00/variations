@@ -49,12 +49,12 @@ public class QueryHandler implements RequestStreamHandler, RequestHandler<Object
 		Query query = gson.fromJson(IOUtils.toString(input, "UTF-8"), Query.class);
 		
 		String result = "{ \"error\" : \"unauthorized token\"}";
-		boolean authorized = new Authorization(context).isAuthorized(query.getId(), query.getToken());
+		boolean authorized = new Authorization(context).isAuthorized(query.getUid(), query.getToken());
 		if(authorized) {
-			logger.log("user: " + query.getId() + " authenticated");
-		
+			logger.log("user: " + query.getUid() + " authenticated");
+			
 			Map<String, AttributeValue> idKey = new TreeMap<String, AttributeValue>();
-			idKey.put("id", new AttributeValue(query.getId()));
+			idKey.put("uid", new AttributeValue(query.getUid()));
 
 			GetItemRequest request = new GetItemRequest()
 			.withKey(idKey)
@@ -79,9 +79,8 @@ public class QueryHandler implements RequestStreamHandler, RequestHandler<Object
 						String happening = eventResult.get("happening").getS();
 						String startDate = eventResult.get("startDate").getS();
 						String valence = eventResult.get("valence").getS();
-						logger.log("" + eightc + ", " + endDate + ", " + happening + ", "
-							+ startDate + ", " + valence);
-						EightcEvent e = new EightcEvent(query.getId(), eightc, Long.parseLong(startDate), Long.parseLong(endDate), Integer.parseInt(valence), happening, "");
+						EightcEvent e = new EightcEvent(query.getUid(), eightc, Long.parseLong(startDate), Long.parseLong(endDate), Integer.parseInt(valence), happening, "", eventId);
+						logger.log(e.toJson());
 						eightcJson.add(e);
 					}					
 				}

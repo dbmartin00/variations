@@ -4,13 +4,14 @@ import com.google.gson.JsonObject;
 
 public class EightcEvent {
 
-	private String id;
+	String uid;
 	String eightc;
 	long startDate;
 	long endDate;
 	int valence;
 	String happening;
-	private String token;
+	String token;
+	private String eventId;
 	
 	public String getEightc() {
 		return eightc;
@@ -43,42 +44,50 @@ public class EightcEvent {
 		this.happening = happening;
 	}
 	
-	public EightcEvent(String id, String eightc, long startDate, 
-			long endDate, int valence, String happening, String token) {
-		this.id = id;
+	public EightcEvent(String uid, String eightc, long startDate, 
+			long endDate, int valence, String happening, String token, String eventId) {
+		this.uid = uid;
 		this.eightc = eightc;
 		this.startDate = startDate;
 		this.endDate = endDate;
 		this.valence = valence;
 		this.happening = happening;
 		this.token = token;
+		this.eventId = eventId;
 	}
 	
 	public String
 	toJson() {
 		JsonObject result = new JsonObject();
 		
-		result.addProperty("id", id);
+		result.addProperty("uid", uid);
 		result.addProperty("eightc", eightc);
 		result.addProperty("startDate", startDate);
 		result.addProperty("endDate", endDate);
 		result.addProperty("value", valence);
 		result.addProperty("happening", getHappening());
 		result.addProperty("token", token);
+		result.addProperty("eventId", eventId);
 		
 		return result.toString();
 	}
-	public String getId() {
-		return id;
+	public String getUid() {
+		return uid;
 	}
-	public void setId(String id) {
-		this.id = id;
+	public void setUid(String uid) {
+		this.uid = uid;
 	}
 	public String getToken() {
 		return token;
 	}
 	public void setToken(String token) {
 		this.token = token;
+	}
+	public String getEventId() {
+		return eventId;
+	}
+	public void setEventId(String eventId) {
+		this.eventId = eventId;
 	}
 
 }

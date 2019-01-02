@@ -26,7 +26,7 @@ public class Authorization {
 	}	
 	
 	public boolean
-	isAuthorized(String id, String token) {
+	isAuthorized(String uid, String token) {
 		boolean result = false;
 		if (ddb == null) {
 			ddb = AmazonDynamoDBClientBuilder.standard()
@@ -34,18 +34,18 @@ public class Authorization {
 		}
 		
 		Map<String, AttributeValue> idKey = new TreeMap<String, AttributeValue>();
-		idKey.put("id", new AttributeValue(id));
+		idKey.put("uid", new AttributeValue(uid));
 
 		GetItemRequest request = new GetItemRequest()
 		.withKey(idKey)
 		.withTableName("variations_tokens");
 			
 		Map<String,AttributeValue> itemResult = ddb.getItem(request).getItem();
-		logger.log("is id '" + id + "' authorized?");
+		logger.log("is uid '" + uid + "' authorized?");
 		if(itemResult != null) {
 			String validToken = itemResult.get("token").getS();
 			
-			logger.log("does input token match token stored withs id? " + token + " ?= " + validToken);
+			logger.log("does input token match token stored withs uid? " + token + " ?= " + validToken);
 			if(token.equalsIgnoreCase(validToken)) { 
 				long timestamp = Long.parseLong(itemResult.get("timestamp").getS());
 				logger.log("is token timestamp within " + kMaxTokenAgeInMillis + " of " + formatter.format(new Date(timestamp)));

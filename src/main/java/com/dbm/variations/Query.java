@@ -3,7 +3,7 @@ package com.dbm.variations;
 public class Query {
 
 	String token;
-	private String id;
+	private String uid;
 
 	public String getToken() {
 		return token;
@@ -13,16 +13,17 @@ public class Query {
 		this.token = token;
 	}
 	
-	public Query(String token) {
+	public Query(String token, String uid) {
 		this.token = token;
+		this.uid = uid;
 	}
 
-	public String getId() {
-		return id;
+	public String getUid() {
+		return uid;
 	}
 
-	public void setId(String id) {
-		this.id = id;
+	public void setId(String uid) {
+		this.uid = uid;
 	}
 	
 }

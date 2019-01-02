@@ -40,9 +40,9 @@ public class Create implements RequestStreamHandler, RequestHandler<Object, Obje
 			ddb = AmazonDynamoDBClientBuilder.standard()
 					.withRegion(Regions.US_WEST_2).build();
 		}
-		boolean authorized = new Authorization(context).isAuthorized(event.getId(), event.getToken()); // missing token
+		boolean authorized = new Authorization(context).isAuthorized(event.getUid(), event.getToken()); // missing token
 		if(authorized) { 
-			logger.log(event.getId() + " authenticated");
+			logger.log(event.getUid() + " authenticated");
 			String uuid = UUID.randomUUID().toString();
 			Map<String, AttributeValue> item = new HashMap<String, AttributeValue>();
 			item.put("eventId", new AttributeValue(uuid));
@@ -53,18 +53,8 @@ public class Create implements RequestStreamHandler, RequestHandler<Object, Obje
 			item.put("valence", new AttributeValue("" + event.getValence()));
 			ddb.putItem("variations_events", item);
 
-			//			Map<String,AttributeValue> attributeValues = new HashMap<>();
-			//			attributeValues.put("events",new AttributeValue().withS(uuid));
-			//
-			//			UpdateItemRequest updateItemRequest = new UpdateItemRequest()
-			//			.withTableName("variations_id2events")
-			//			.addKeyEntry("id",new AttributeValue().withS(event.getId()));
-			//
-			//			UpdateItemResult updateItemResult = ddb.updateItem(updateItemRequest);
-			//			logger.log("" + updateItemResult.getAttributes());
-
 			Map<String, AttributeValue> idKey = new HashMap<String, AttributeValue>();
-			idKey.put("id", new AttributeValue().withS(event.getId()));
+			idKey.put("uid", new AttributeValue().withS(event.getUid()));
 //			String updateExpression = "SET #events = list_append(#events, :eventId)";
 			String updateExpression = "ADD #events :eventId";
 			
